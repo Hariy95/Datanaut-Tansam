@@ -12,6 +12,14 @@ import connectionManager from "./connectionManager.js";
 import chartsStorage from "./chartsStorage.js";
 import { updateHandler } from "./modules/thingSpeak.js";
 
+// Global crash prevention for backend process
+process.on("uncaughtException", (err) => {
+  console.error("🔥 Uncaught Exception in backend process:", err);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("🔥 Unhandled Promise Rejection in backend process at:", promise, "reason:", reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

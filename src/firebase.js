@@ -18,18 +18,29 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app = null;
+let auth = null;
+let db = null;
+let analytics = null;
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
+try {
+  // Only attempt initialization if we have a valid, non-empty API key string.
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined" && firebaseConfig.apiKey.trim() !== "") {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    try {
+      analytics = getAnalytics(app);
+    } catch (_) {
+      // analytics is optional
+    }
+  } else {
+    console.log("📝 Firebase API Key is not set or empty. Gracefully switching authentication to local Demo Mode.");
+  }
+} catch (error) {
+  console.warn("🔥 Firebase initialization failed during bootstrap. Application will run in Demo Mode:", error);
+}
 
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
-
-// Initialize Analytics (optional)
-const analytics = getAnalytics(app);
-
+export { auth, db, analytics };
 export const DEMO_MODE = false;
-
 export default app;

@@ -3,9 +3,13 @@ import assert from "node:assert/strict";
 import { createSqlConnection, queryTablePaginated, closeConnection } from "../modules/sql.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getDb } from "../modules/staticDb.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.join(__dirname, "../static_datasets.db");
+
+// Ensure database schema is created and seeded before running tests
+await getDb();
 
 test("C1: queryTablePaginated with no search returns all rows (baseline)", async () => {
   const conn = await createSqlConnection({ type: "sqlite", filename: DB_PATH });

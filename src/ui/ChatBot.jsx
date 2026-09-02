@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { sendChatMessage } from '../utils/chatApi';
+import { useStore } from '../providers/StoreContext.jsx';
 // Try to import lucide icons if available; otherwise fall back to simple text/SVG
 let PaperPlaneIcon = null;
 let MessageSquare = null;
@@ -33,22 +34,12 @@ function buildDatasetSummary(datasets) {
     const lines = [];
     for (const name of names) {
       const ds = datasets[name];
-      const cols = ds?.columns || (ds?.data && ds.data[0] ? Object.keys(ds.data[0]) : []);
-      const rowCount = ds?.data?.length ?? ds?.length ?? 'unknown';
-      lines.push(`- ${name}: ${cols.length} columns, ~${rowCount} rows`);
-      lines.push(`  columns: ${cols.slice(0, 10).join(', ')}${cols.length > 10 ? ', ...' : ''}`);
-      // basic stats for numeric columns (first 3)
-      const numericCols = cols.filter((c) => {
-        const sample = (ds.data && ds.data[0] && ds.data[0][c]);
-        return typeof sample === 'number';
-      });
-      const take = numericCols.slice(0, 3);
-      if (take.length) {
-        for (const c of take) {
-          const vals = (ds.data || []).map((r) => Number(r[c])).filter((v) => !Number.isNaN(v));
-          const mean = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
-          lines.push(`  sample numeric '${c}': count=${vals.length}, mean=${(mean || 0).toFixed(2)}`);
-        }
+      const cols = ds?.headers || ds?.schema?.headers || ds?.columns || [];
+      const types = ds?.types || ds?.schema?.types || [];
+      const rowCount = ds?.rowCount ?? ds?.data?.length ?? 'unknown';
+      lines.push(`- ${ds?.name || name}: ${cols.length} columns, ~${rowCount} rows`);
+      if (cols.length > 0) {
+        lines.push(`  columns: ${cols.slice(0, 10).map((c, idx) => `${c} (${types[idx] || "string"})`).join(', ')}${cols.length > 10 ? ', ...' : ''}`);
       }
     }
     return lines.join('\n');
@@ -76,23 +67,7 @@ export default function ChatBot() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const listRef = useRef(null);
 
-  const datasets = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('datasets');
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }, [messages]);
-
-  const charts = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('charts');
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }, [messages]);
+  const { datasets, charts } = useStore();
 
   const summary = useMemo(() => buildDatasetSummary(datasets), [datasets]);
 

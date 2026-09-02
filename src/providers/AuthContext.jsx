@@ -40,8 +40,16 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initializeAuth = async () => {
       if (DEMO_MODE) {
-        // Demo mode - simulate logged out state
-        setUser(null);
+        try {
+          const savedUser = localStorage.getItem("demo_user");
+          if (savedUser) {
+            setUser(JSON.parse(savedUser));
+          } else {
+            setUser(null);
+          }
+        } catch (_) {
+          setUser(null);
+        }
         setLoading(false);
         return;
       }
@@ -53,7 +61,16 @@ export function AuthProvider({ children }) {
         console.log('🔥 Switching to DEMO MODE - Firebase Auth not properly configured');
         console.log('📝 To fix: Enable Email/Password authentication in Firebase Console > Authentication > Sign-in method');
         setIsDemoMode(true);
-        setUser(null);
+        try {
+          const savedUser = localStorage.getItem("demo_user");
+          if (savedUser) {
+            setUser(JSON.parse(savedUser));
+          } else {
+            setUser(null);
+          }
+        } catch (_) {
+          setUser(null);
+        }
         setLoading(false);
         return;
       }
@@ -84,10 +101,22 @@ export function AuthProvider({ children }) {
     }
 
     if (isDemoMode || DEMO_MODE) {
-      // Demo mode - simulate successful signup
-      const demoUser = { uid: 'demo-user', email: email.trim() };
-      setUser(demoUser);
-      return demoUser;
+      const trimmedEmail = email.trim().toLowerCase();
+      try {
+        const users = JSON.parse(localStorage.getItem("demo_registered_users") || "{}");
+        if (users[trimmedEmail]) {
+          throw new Error("Auth/email-already-in-use: The email address is already in use by another account.");
+        }
+        users[trimmedEmail] = password;
+        localStorage.setItem("demo_registered_users", JSON.stringify(users));
+        
+        const demoUser = { uid: 'demo-user-' + trimmedEmail.split('@')[0], email: trimmedEmail };
+        localStorage.setItem("demo_user", JSON.stringify(demoUser));
+        setUser(demoUser);
+        return demoUser;
+      } catch (err) {
+        throw new Error(err.message || "Failed to sign up.");
+      }
     }
 
     if (!auth || !db) {
@@ -112,10 +141,34 @@ export function AuthProvider({ children }) {
     }
 
     if (isDemoMode || DEMO_MODE) {
-      // Demo mode - simulate successful login
-      const demoUser = { uid: 'demo-user', email: email.trim() };
-      setUser(demoUser);
-      return demoUser;
+      const trimmedEmail = email.trim().toLowerCase();
+      
+      // Allow default credential admin@example.com / password
+      if (trimmedEmail === "admin@example.com" && password === "password") {
+        const demoUser = { uid: 'demo-user-admin', email: trimmedEmail };
+        localStorage.setItem("demo_user", JSON.stringify(demoUser));
+        setUser(demoUser);
+        return demoUser;
+      }
+
+      try {
+        const users = JSON.parse(localStorage.getItem("demo_registered_users") || "{}");
+        const registeredPassword = users[trimmedEmail];
+        
+        if (!registeredPassword) {
+          throw new Error("Auth/user-not-found: The user account does not exist. Please sign up.");
+        }
+        if (registeredPassword !== password) {
+          throw new Error("Auth/wrong-password: The password is invalid.");
+        }
+        
+        const demoUser = { uid: 'demo-user-' + trimmedEmail.split('@')[0], email: trimmedEmail };
+        localStorage.setItem("demo_user", JSON.stringify(demoUser));
+        setUser(demoUser);
+        return demoUser;
+      } catch (err) {
+        throw new Error(err.message || "Failed to log in.");
+      }
     }
 
     if (!auth) {
@@ -129,6 +182,7 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     if (isDemoMode || DEMO_MODE) {
       const demoUser = { uid: "demo-google-user", email: "demo-google-user@example.com", provider: "google" };
+      localStorage.setItem("demo_user", JSON.stringify(demoUser));
       setUser(demoUser);
       return demoUser;
     }
@@ -143,7 +197,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     if (isDemoMode || DEMO_MODE) {
-      // Demo mode - simulate logout
+      localStorage.removeItem("demo_user");
       setUser(null);
       return;
     }

@@ -1,9 +1,10 @@
 import GlassCard from "./GlassCard.jsx";
 import { toRendererConfig } from "../utils/dynamicChartUtils.js";
+import ChartErrorBoundary from "./ChartErrorBoundary.jsx";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-export default function DynamicChart3D({
+function DynamicChart3DInternal({
   chart,
   data,
   onEdit,
@@ -164,5 +165,13 @@ export default function DynamicChart3D({
     <GlassCard className={`p-4 shadow-xl transition-colors md:p-6 ${className}`}>
       {content}
     </GlassCard>
+  );
+}
+
+export default function DynamicChart3D(props) {
+  return (
+    <ChartErrorBoundary>
+      <DynamicChart3DInternal {...props} />
+    </ChartErrorBoundary>
   );
 }

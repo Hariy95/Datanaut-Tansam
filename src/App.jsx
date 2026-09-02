@@ -39,7 +39,24 @@ const NotFound           = lazy(() => import("./pages/NotFound.jsx"));
 
 import ChatBot from "./ui/ChatBot.jsx";
 import LiquidBackdrop from "./ui/LiquidBackdrop.jsx";
-import logoImage from "./LOGO.jpg";
+
+// Sleek, vector Logo icon for DATANAUT (resolves missing LOGO.jpg file dependency)
+const LogoIcon = () => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className="h-full w-full p-1.5 text-brand-500 dark:text-brand-400 bg-brand-50/80 dark:bg-brand-500/10 rounded-xl"
+  >
+    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" className="stroke-slate-200 dark:stroke-slate-800" />
+    <path d="M12 6v12M6 12h12" />
+    <circle cx="12" cy="12" r="3" className="fill-brand-500 stroke-brand-500" />
+    <path d="M16.5 7.5L7.5 16.5M7.5 7.5l9 9" className="stroke-brand-400/55" />
+  </svg>
+);
 
 const PageLoader = () => (
   <div className="flex h-48 items-center justify-center">
@@ -95,8 +112,8 @@ function Layout() {
         {/* Brand / Logo Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/60">
           <Link to="/home" className="flex items-center gap-3">
-            <div className="h-10 w-10 overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-700/80">
-              <img src={logoImage} alt="Logo" className="h-full w-full object-cover" />
+            <div className="h-10 w-10 overflow-hidden rounded-xl">
+              <LogoIcon />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">DATANAUT</h1>

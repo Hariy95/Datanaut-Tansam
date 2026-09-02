@@ -111,7 +111,8 @@ export function StoreProvider({ children }) {
               yField: "value",
               yFields: ["value"],
               angleField: "value",
-              categoryField: "category"
+              categoryField: "category",
+              valueField: "value"
             },
             options: {
               aggregation: "none",

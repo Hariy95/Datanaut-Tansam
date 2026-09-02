@@ -8,11 +8,11 @@ const hostname =
 const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
 
 export const BACKEND_URL =
-  import.meta.env?.VITE_BACKEND_URL ??
+  import.meta.env?.VITE_BACKEND_URL ||
   `${protocol}//${hostname}:8085`;
 
 export const WS_URL =
-  import.meta.env?.VITE_WS_URL ??
+  import.meta.env?.VITE_WS_URL ||
   `${protocol === "https:" ? "wss:" : "ws:"}//${hostname}:8085`;
 
 // WS URL with API key appended as query param for server-side auth.

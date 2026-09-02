@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import { useTheme } from "../providers/ThemeContext.jsx";
 import { defaultPalette } from "../utils/colors.js";
 import Dynamic3DCharts from "./Dynamic3DCharts.jsx";
+import ChartErrorBoundary from "./ChartErrorBoundary.jsx";
 import {
   Area,
   AreaChart,
@@ -110,7 +111,7 @@ const CustomTooltip = ({ active, payload, label, isDark, palette, chartType, map
   );
 };
 
-export default function ChartRenderer({ chart, data = [], compact = false, skipValidation = false, serverComputed = null }) {
+function ChartRendererInternal({ chart, data = [], compact = false, skipValidation = false, serverComputed = null }) {
   const containerRef = useRef(null);
   const chartDomIdRef = useRef(makeDomId(chart?.id));
   const [exporting, setExporting] = useState(false);
@@ -762,5 +763,13 @@ export default function ChartRenderer({ chart, data = [], compact = false, skipV
         {renderChart()}
       </div>
     </div>
+  );
+}
+
+export default function ChartRenderer(props) {
+  return (
+    <ChartErrorBoundary>
+      <ChartRendererInternal {...props} />
+    </ChartErrorBoundary>
   );
 }
